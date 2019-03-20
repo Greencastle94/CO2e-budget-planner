@@ -75,7 +75,7 @@ class SetBudgetPage extends Component {
     });
   }
 
-  handleSubmit(event) {
+  handleSubmit() {
     this.props.confirm(this.state.tempGoalCO2e);
   }
 
@@ -106,8 +106,8 @@ class SetBudgetPage extends Component {
           max={this.props.currentCO2e}
           startValue={this.state.tempGoalCO2e}
           handleChange={this.handleChange}
-          handleSubmit={this.handleSubmit}
         />
+        <button type="button" onClick={this.handleSubmit}>Nästa steg</button>
       </div>
     );
   }
@@ -115,11 +115,49 @@ class SetBudgetPage extends Component {
 
 function RangeInputForm(props) {
   return (
-    <form onSubmit={props.handleSubmit}>
+    <form>
       <input type="range" min="0" max={props.max} step="0.1" value={props.startValue} onChange={props.handleChange}/>
-      <br/>
-      <input type="submit" value="Tillbaka"/>
     </form>
+  );
+}
+
+
+// 3. ALLOCATE PORTIONS OF BUDGET TO DIFFERENT CATEGORIES
+class SetDetailBudgetPage extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {}
+  }
+
+  render() {
+    return(
+      <div>
+        <div>Planera din budget</div>
+        <VictoryPie
+          data={[
+            {x: "Transport", y: 5},
+            {x: "Boende", y: 3},
+            {x: "Mat & Dryck", y: 2},
+            {x: "Övrig konsumption", y: 1}
+          ]}
+          colorScale={["blue", "yellow", "green", "pink"]}
+        />
+        <BudgetControlPanel/>
+        <button type="button">Tillbaka</button>
+      </div>
+    );
+  }
+}
+
+function BudgetControlPanel(props) {
+  return (
+    <div>
+      <RangeInputForm
+        max={100}
+        startValue={50}
+        handleChange={0}
+      />
+    </div>
   );
 }
 
@@ -164,7 +202,7 @@ class App extends Component {
     this.state = {
       phase: 1,
       currentCO2e: 11,
-      budgetLimit: null,
+      budgetLimit: 6,
     };
   }
 
@@ -178,7 +216,7 @@ class App extends Component {
   confirmBudgetLimit(value) {
     this.setState({
       budgetLimit: value,
-      phase: 1
+      phase: 3
     });
   }
 
@@ -195,6 +233,10 @@ class App extends Component {
                       />
         break;
       case 3:
+        mainContent = <SetDetailBudgetPage
+                        budgetLimit={this.state.budgetLimit}
+                        confirm={(v)=>this.confirmBudgetLimit(v)}
+                      />
         break;
       default:
         break;
