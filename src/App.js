@@ -102,7 +102,7 @@ class SetBudgetPage extends Component {
           />
         </svg>
         <div>{this.state.tempGoalCO2e}</div>
-        <RangeInputForm
+        <RangeInput
           max={this.props.currentCO2e}
           startValue={this.state.tempGoalCO2e}
           handleChange={this.handleChange}
@@ -113,7 +113,7 @@ class SetBudgetPage extends Component {
   }
 }
 
-function RangeInputForm(props) {
+function RangeInput(props) {
   return (
     <form>
       <input type="range" min="0" max={props.max} step="0.1" value={props.startValue} onChange={props.handleChange}/>
@@ -126,7 +126,22 @@ function RangeInputForm(props) {
 class SetDetailBudgetPage extends Component {
   constructor(props) {
     super(props);
-    this.state = {}
+    this.state = {
+      transport: 5,
+      housing: 3,
+      food: 2,
+      other: 1
+    };
+    this.titles = [
+      "Transport",
+      "Boende",
+      "Mat & Dryck",
+      "Övrig konsumtion"
+    ];
+  }
+
+  handleChange(data) {
+    // this.setState(data.title: data.value);
   }
 
   render() {
@@ -135,30 +150,51 @@ class SetDetailBudgetPage extends Component {
         <div>Planera din budget</div>
         <VictoryPie
           data={[
-            {x: "Transport", y: 5},
-            {x: "Boende", y: 3},
-            {x: "Mat & Dryck", y: 2},
-            {x: "Övrig konsumption", y: 1}
+            {x: this.titles[0], y: this.state.transport},
+            {x: this.titles[1], y: this.state.housing},
+            {x: this.titles[2], y: this.state.food},
+            {x: this.titles[3], y: this.state.other}
           ]}
           colorScale={["blue", "yellow", "green", "pink"]}
         />
-        <BudgetControlPanel/>
+        <BudgetControlPanel
+          titles={this.titles}
+          handleChange={(data) => this.handleChange(data)}
+        />
         <button type="button">Tillbaka</button>
       </div>
     );
   }
 }
 
-function BudgetControlPanel(props) {
-  return (
-    <div>
-      <RangeInputForm
-        max={100}
-        startValue={50}
-        handleChange={0}
-      />
-    </div>
-  );
+class BudgetControlPanel extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {openTab: this.props.titles[0]};
+  }
+
+  tabClick(event) {
+    console.log("Tab title: " + event.target.value);
+    this.setState({
+      openTab: event.target.value,
+    });
+  }
+
+  render() {
+    let tabButtons = this.props.titles.map((title) =>
+      <button value={title} onClick={this.tabClick}>{title}</button>);
+
+    return (
+      <div>
+        {tabButtons}
+        <RangeInput
+          max={100}
+          startValue={50}
+          handleChange={(data) => this.props.handleChange(data)}
+        />
+      </div>
+    );
+  }
 }
 
 class BudgetGraph extends Component {
@@ -200,7 +236,7 @@ class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      phase: 1,
+      phase: 3,
       currentCO2e: 11,
       budgetLimit: 6,
     };
@@ -235,7 +271,6 @@ class App extends Component {
       case 3:
         mainContent = <SetDetailBudgetPage
                         budgetLimit={this.state.budgetLimit}
-                        confirm={(v)=>this.confirmBudgetLimit(v)}
                       />
         break;
       default:
