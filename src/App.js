@@ -102,6 +102,7 @@ class SetBudgetPage extends Component {
         </svg>
         <div>{this.state.tempGoalCO2e}</div>
         <RangeInput
+          stepSize="0,1"
           max={this.props.currentCO2e}
           startValue={this.state.tempGoalCO2e}
           handleChange={this.handleChange}
@@ -115,7 +116,7 @@ class SetBudgetPage extends Component {
 function RangeInput(props) {
   return (
     <form>
-      <input type="range" min="0" max={props.max} step="0.1" value={props.startValue} onChange={props.handleChange}/>
+      <input type="range" min="0" max={props.max} step={props.stepSize} value={props.startValue} onChange={props.handleChange}/>
     </form>
   );
 }
@@ -131,6 +132,7 @@ class SetDetailBudgetPage extends Component {
       food: 0,
       other: 0
     };
+    this.monthlyBudget = this.props.budgetLimit/12;
     this.titles = [
       "Transport",
       "Boende",
@@ -139,14 +141,30 @@ class SetDetailBudgetPage extends Component {
     ];
   }
 
-  handleChange(data) {
-    // this.setState(data.title: data.value);
+  handleChange(emissionsForCategory) {
+    console.log(3);
+    switch (emissionsForCategory.category) {
+      case "transport":
+        this.setState({transport: emissionsForCategory.emissions});
+        break;
+      case "housing":
+        this.setState({housing: emissionsForCategory.emissions});
+        break;
+      case "food":
+        this.setState({food: emissionsForCategory.emissions});
+        break;
+      case "other":
+        this.setState({other: emissionsForCategory.emissions});
+        break;
+      default:
+        break;
+    }
   }
 
   render() {
     return(
       <div>
-        <div>Planera din budget</div>
+        <div>Planera din MÅNADSbudget</div>
         <VictoryPie
           data={[
             {x: this.titles[0], y: this.state.transport},
@@ -159,7 +177,8 @@ class SetDetailBudgetPage extends Component {
         <BudgetControlPanel
           titles={this.titles}
           CO2eList={this.props.CO2eList}
-          handleChange={(data) => this.handleChange(data)}
+          budgetLimit={this.monthlyBudget}
+          handleChange={this.handleChange.bind(this)}
         />
         <button type="button">Tillbaka</button>
       </div>
@@ -171,7 +190,8 @@ class BudgetControlPanel extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      openTab: "transport"
+      openTab: "transport",
+      budgetLeft: this.props.budgetLimit*1000
     };
     this.categories = [
       "transport",
@@ -182,13 +202,69 @@ class BudgetControlPanel extends Component {
   }
 
   tabClick(event) {
-    console.log("Tab value: " + event.target.value);
     this.setState({
       openTab: event.target.value,
     });
   }
 
+  handleChange(event, CO2eObject) {
+    console.log(1);
+    for (var i in this.props.CO2eList[this.state.openTab]) {
+      if (this.props.CO2eList[this.state.openTab][i].name == CO2eObject.name) {
+        let newCO2e = Math.abs(CO2eObject.CO2eUsed - event.target.value*CO2eObject.intensity);
+        console.log(newCO2e);
+        if (this.state.budgetLeft - newCO2e > 0) {
+          this.props.CO2eList[this.state.openTab][i].CO2eUsed = newCO2e;
+        }
+        else {
+          return;
+        }
+      }
+    }
+
+    let totalCO2eUsed = 0;
+    let emissionsForCategory = {
+      category: this.state.openTab,
+      emissions: 0
+    };
+    for (let category in this.props.CO2eList) {
+      for (let i in this.props.CO2eList[category]) {
+        if (category == this.state.openTab) {
+          emissionsForCategory.emissions += this.props.CO2eList[category][i].CO2eUsed;
+        }
+        totalCO2eUsed += this.props.CO2eList[category][i].CO2eUsed;
+      }
+    }
+    console.log("Budget limit: " + this.props.budgetLimit);
+    console.log("CO2e used: " + totalCO2eUsed/1000);
+    let newBudgetLeft = this.props.budgetLimit*1000-totalCO2eUsed;
+
+    if (newBudgetLeft >= 0) {
+      console.log(2);
+      this.setState({
+        budgetLeft: newBudgetLeft
+      });
+      this.props.handleChange(emissionsForCategory);
+    }
+  }
+
+  calculateMax(CO2eObject) {
+    var newMax = this.state.budgetLeft/CO2eObject.intensity;
+
+    // console.log("Budget left: " + this.state.budgetLeft);
+    // console.log(newMax);
+
+    if (newMax > CO2eObject.CO2eUsed) {
+      return newMax;
+    }
+    else {
+      return CO2eObject.CO2eUsed;
+    }
+  }
+
   render() {
+    // console.log("New re-render!");
+
     let i = 0;
     let tabButtons = this.props.titles.map((title) =>
       <button value={this.categories[i++]} onClick={this.tabClick.bind(this)}>{title}</button>
@@ -197,10 +273,12 @@ class BudgetControlPanel extends Component {
     let slidersForSpecificTab = this.props.CO2eList[this.state.openTab].map((CO2eObject) =>
       <div>
         <h3>{CO2eObject.display_name}</h3>
+        <p>{CO2eObject.CO2eUsed} kr</p>
         <RangeInput
-          max={100}
-          startValue={50}
-          handleChange={this.props.handleChange}
+          stepSize="1"
+          max={this.calculateMax(CO2eObject)}
+          startValue={CO2eObject.CO2eUsed}
+          handleChange={(e) => this.handleChange(e, CO2eObject)}
         />
       </div>
     );
@@ -232,18 +310,20 @@ class App extends Component {
     };
 
     for (var prop in file) {
-      switch(file[prop].chart_group) {
+      var CO2eObject = file[prop];
+      CO2eObject.CO2eUsed = 0;
+      switch(CO2eObject.chart_group) {
         case "transport":
-          this.CO2eList.transport.push(file[prop]);
+          this.CO2eList.transport.push(CO2eObject);
           break;
         case "housing":
-          this.CO2eList.housing.push(file[prop]);
+          this.CO2eList.housing.push(CO2eObject);
           break;
         case "food":
-          this.CO2eList.food.push(file[prop]);
+          this.CO2eList.food.push(CO2eObject);
           break;
         case "misc":
-          this.CO2eList.other.push(file[prop]);
+          this.CO2eList.other.push(CO2eObject);
           break;
         default:
           break;
