@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import './App.css';
+import file from './cats.json';
 import NumericInput from 'react-numeric-input';
 import { VictoryPie, VictoryLabel } from 'victory';
 
@@ -58,13 +59,11 @@ class SetBudgetPage extends Component {
       goalRadius: this.calculateRadius(this.props.currentCO2e/2)
     };
 
-    // this.calculateRadius = this.calculateRadius.bind(this);
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
   }
 
   calculateRadius(CO2eValue) {
-    console.log("I'm working!");
     return CO2eValue/this.props.currentCO2e*this.upperLimitRadius;
   }
 
@@ -127,10 +126,10 @@ class SetDetailBudgetPage extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      transport: 5,
-      housing: 3,
-      food: 2,
-      other: 1
+      transport: 0,
+      housing: 0,
+      food: 0,
+      other: 0
     };
     this.titles = [
       "Transport",
@@ -159,6 +158,7 @@ class SetDetailBudgetPage extends Component {
         />
         <BudgetControlPanel
           titles={this.titles}
+          CO2eList={this.props.CO2eList}
           handleChange={(data) => this.handleChange(data)}
         />
         <button type="button">Tillbaka</button>
@@ -170,62 +170,46 @@ class SetDetailBudgetPage extends Component {
 class BudgetControlPanel extends Component {
   constructor(props) {
     super(props);
-    this.state = {openTab: this.props.titles[0]};
+    this.state = {
+      openTab: "transport"
+    };
+    this.categories = [
+      "transport",
+      "housing",
+      "food",
+      "other"
+    ]
   }
 
   tabClick(event) {
-    console.log("Tab title: " + event.target.value);
+    console.log("Tab value: " + event.target.value);
     this.setState({
       openTab: event.target.value,
     });
   }
 
   render() {
+    let i = 0;
     let tabButtons = this.props.titles.map((title) =>
-      <button value={title} onClick={this.tabClick}>{title}</button>);
+      <button value={this.categories[i++]} onClick={this.tabClick.bind(this)}>{title}</button>
+    );
+
+    let slidersForSpecificTab = this.props.CO2eList[this.state.openTab].map((CO2eObject) =>
+      <div>
+        <h3>{CO2eObject.display_name}</h3>
+        <RangeInput
+          max={100}
+          startValue={50}
+          handleChange={this.props.handleChange}
+        />
+      </div>
+    );
 
     return (
       <div>
         {tabButtons}
-        <RangeInput
-          max={100}
-          startValue={50}
-          handleChange={(data) => this.props.handleChange(data)}
-        />
+        {slidersForSpecificTab}
       </div>
-    );
-  }
-}
-
-class BudgetGraph extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      externalMutations: this.props.externalMutations,
-    };
-  }
-
-  render() {
-    return (
-      <svg viewBox="0 0 220 220">
-        <VictoryPie
-          externalEventMutations={this.state.externalMutations}
-          standalone={false}
-          width={220} height={220}
-          data={[{x: " ", y: 1}]}
-          radius={this.props.goalRadius}
-          innerRadius={this.props.goalRadius-20}
-          colorScale={["green"]}
-        />
-        <circle cx="110" cy="110" r={this.props.exampleRadius} fill="none" stroke="black" strokeWidth={3} strokeDasharray="6"/>
-        <circle cx="110" cy="110" r={this.props.upperLimitRadius} fill="none" stroke="red" strokeWidth={3}/>
-        <VictoryLabel
-          textAnchor="middle" verticalAnchor="middle"
-          x={110} y={110}
-          style={{fontSize: 20}}
-          text="CO2e"
-        />
-      </svg>
     );
   }
 }
@@ -239,6 +223,31 @@ class App extends Component {
       phase: 3,
       currentCO2e: 11,
       budgetLimit: 6,
+    };
+    this.CO2eList = {
+      transport: [],
+      housing: [],
+      food: [],
+      other: []
+    };
+
+    for (var prop in file) {
+      switch(file[prop].chart_group) {
+        case "transport":
+          this.CO2eList.transport.push(file[prop]);
+          break;
+        case "housing":
+          this.CO2eList.housing.push(file[prop]);
+          break;
+        case "food":
+          this.CO2eList.food.push(file[prop]);
+          break;
+        case "misc":
+          this.CO2eList.other.push(file[prop]);
+          break;
+        default:
+          break;
+      };
     };
   }
 
@@ -270,6 +279,7 @@ class App extends Component {
         break;
       case 3:
         mainContent = <SetDetailBudgetPage
+                        CO2eList={this.CO2eList}
                         budgetLimit={this.state.budgetLimit}
                       />
         break;
