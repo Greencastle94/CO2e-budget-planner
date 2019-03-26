@@ -81,7 +81,7 @@ class SetBudgetPage extends Component {
   render() {
     return (
       <div>
-        <div>Sätt taket för din målbudget</div>
+        <div>Sätt din årsbudget</div>
         <svg viewBox="0 0 220 220">
           <VictoryPie
             standalone={false}
@@ -164,7 +164,7 @@ class SetDetailBudgetPage extends Component {
   render() {
     return(
       <div>
-        <div>Planera din MÅNADSbudget</div>
+        <div>Planera din månadsbudget</div>
         <VictoryPie
           data={[
             {x: this.titles[0], y: this.state.transport},
