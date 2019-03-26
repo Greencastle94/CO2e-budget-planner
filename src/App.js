@@ -263,12 +263,16 @@ class BudgetControlPanel extends Component {
       emissionsForCategory.emissions += this.props.CO2eList[this.state.openTab][i].co2eSpent();
     }
 
-    // console.log("Budget left: " + budgetLeft);
+    console.log("Budget left: " + budgetLeft);
 
     this.setState({
       budgetLeft: budgetLeft
     });
     this.props.handleChange(emissionsForCategory);
+  }
+
+  calculateMax(CO2eObject) {
+    return CO2eObject.moneySpent + this.state.budgetLeft/CO2eObject.intensity;
   }
 
   render() {
@@ -283,7 +287,7 @@ class BudgetControlPanel extends Component {
         <p>{CO2eObject.moneySpent} kr</p>
         <RangeInput
           stepSize="1"
-          max={this.props.budgetLimit/CO2eObject.intensity}
+          max={this.calculateMax(CO2eObject)}
           startValue={CO2eObject.moneySpent}
           handleChange={(e) => this.handleChange(e, CO2eObject)}
         />
