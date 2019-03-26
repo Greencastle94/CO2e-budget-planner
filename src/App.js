@@ -130,9 +130,10 @@ class SetDetailBudgetPage extends Component {
       transport: 0,
       housing: 0,
       food: 0,
-      other: 0
+      other: 0,
+      pieAngle: 0
     };
-    this.monthlyBudget = this.props.budgetLimit/12;
+    this.monthlyBudget = this.props.budgetLimit/12*1000;
     this.titles = [
       "Transport",
       "Boende",
@@ -141,20 +142,37 @@ class SetDetailBudgetPage extends Component {
     ];
   }
 
+  calculateAngle() {
+    var state = this.state;
+    var total = state.transport + state.housing + state.food + state.other;
+    return total/this.monthlyBudget*360;
+  }
+
   handleChange(emissionsForCategory) {
-    console.log(3);
     switch (emissionsForCategory.category) {
       case "transport":
-        this.setState({transport: emissionsForCategory.emissions});
+        this.setState({
+          transport: emissionsForCategory.emissions,
+          pieAngle: this.calculateAngle()
+        });
         break;
       case "housing":
-        this.setState({housing: emissionsForCategory.emissions});
+        this.setState({
+          housing: emissionsForCategory.emissions,
+          pieAngle: this.calculateAngle()
+        });
         break;
       case "food":
-        this.setState({food: emissionsForCategory.emissions});
+        this.setState({
+          food: emissionsForCategory.emissions,
+          pieAngle: this.calculateAngle()
+        });
         break;
       case "other":
-        this.setState({other: emissionsForCategory.emissions});
+        this.setState({
+          other: emissionsForCategory.emissions,
+          pieAngle: this.calculateAngle()
+        });
         break;
       default:
         break;
@@ -165,15 +183,23 @@ class SetDetailBudgetPage extends Component {
     return(
       <div>
         <div>Planera din månadsbudget</div>
-        <VictoryPie
-          data={[
-            {x: this.titles[0], y: this.state.transport},
-            {x: this.titles[1], y: this.state.housing},
-            {x: this.titles[2], y: this.state.food},
-            {x: this.titles[3], y: this.state.other}
-          ]}
-          colorScale={["blue", "yellow", "green", "pink"]}
-        />
+        <svg viewBox="0 0 220 220">
+          <VictoryPie
+            standalone={false}
+            data={[
+              {x: this.titles[0], y: this.state.transport},
+              {x: this.titles[1], y: this.state.housing},
+              {x: this.titles[2], y: this.state.food},
+              {x: this.titles[3], y: this.state.other}
+            ]}
+            startAngle={0}
+            endAngle={this.state.pieAngle}
+            width={220} height={220}
+            radius={100}
+            colorScale={["blue", "yellow", "green", "pink"]}
+          />
+          <circle cx="110" cy="110" r="100" fill="none" stroke="black" strokeWidth="3"/>
+        </svg>
         <BudgetControlPanel
           titles={this.titles}
           CO2eList={this.props.CO2eList}
@@ -191,7 +217,8 @@ class BudgetControlPanel extends Component {
     super(props);
     this.state = {
       openTab: "transport",
-      budgetLeft: this.props.budgetLimit*1000
+      budgetLeft: this.props.budgetLimit,
+      sliderValue: 0
     };
     this.categories = [
       "transport",
@@ -207,64 +234,44 @@ class BudgetControlPanel extends Component {
     });
   }
 
-  handleChange(event, CO2eObject) {
-    console.log(1);
-    for (var i in this.props.CO2eList[this.state.openTab]) {
+  findIndexOfObject(CO2eObject) {
+    for (let i in this.props.CO2eList[this.state.openTab]) {
       if (this.props.CO2eList[this.state.openTab][i].name == CO2eObject.name) {
-        let newCO2e = Math.abs(CO2eObject.CO2eUsed - event.target.value*CO2eObject.intensity);
-        console.log(newCO2e);
-        if (this.state.budgetLeft - newCO2e > 0) {
-          this.props.CO2eList[this.state.openTab][i].CO2eUsed = newCO2e;
-        }
-        else {
-          return;
-        }
+        return i;
       }
     }
+  }
 
-    let totalCO2eUsed = 0;
+  handleChange(event, CO2eObject) {
+    var budgetLeft = this.state.budgetLeft;
+    var moneyChange = event.target.value - CO2eObject.moneySpent;
+    var co2eChange = moneyChange * CO2eObject.intensity;
+
+    if (budgetLeft - co2eChange >= 0) {
+      this.props.CO2eList[this.state.openTab][this.findIndexOfObject(CO2eObject)].moneySpent += moneyChange;
+      budgetLeft -= co2eChange;
+    }
+    else {
+      return;
+    }
+
     let emissionsForCategory = {
       category: this.state.openTab,
       emissions: 0
     };
-    for (let category in this.props.CO2eList) {
-      for (let i in this.props.CO2eList[category]) {
-        if (category == this.state.openTab) {
-          emissionsForCategory.emissions += this.props.CO2eList[category][i].CO2eUsed;
-        }
-        totalCO2eUsed += this.props.CO2eList[category][i].CO2eUsed;
-      }
+    for (let i in this.props.CO2eList[this.state.openTab]) {
+      emissionsForCategory.emissions += this.props.CO2eList[this.state.openTab][i].co2eSpent();
     }
-    console.log("Budget limit: " + this.props.budgetLimit);
-    console.log("CO2e used: " + totalCO2eUsed/1000);
-    let newBudgetLeft = this.props.budgetLimit*1000-totalCO2eUsed;
 
-    if (newBudgetLeft >= 0) {
-      console.log(2);
-      this.setState({
-        budgetLeft: newBudgetLeft
-      });
-      this.props.handleChange(emissionsForCategory);
-    }
-  }
+    // console.log("Budget left: " + budgetLeft);
 
-  calculateMax(CO2eObject) {
-    var newMax = this.state.budgetLeft/CO2eObject.intensity;
-
-    // console.log("Budget left: " + this.state.budgetLeft);
-    // console.log(newMax);
-
-    if (newMax > CO2eObject.CO2eUsed) {
-      return newMax;
-    }
-    else {
-      return CO2eObject.CO2eUsed;
-    }
+    this.setState({
+      budgetLeft: budgetLeft
+    });
+    this.props.handleChange(emissionsForCategory);
   }
 
   render() {
-    // console.log("New re-render!");
-
     let i = 0;
     let tabButtons = this.props.titles.map((title) =>
       <button value={this.categories[i++]} onClick={this.tabClick.bind(this)}>{title}</button>
@@ -273,11 +280,11 @@ class BudgetControlPanel extends Component {
     let slidersForSpecificTab = this.props.CO2eList[this.state.openTab].map((CO2eObject) =>
       <div>
         <h3>{CO2eObject.display_name}</h3>
-        <p>{CO2eObject.CO2eUsed} kr</p>
+        <p>{CO2eObject.moneySpent} kr</p>
         <RangeInput
           stepSize="1"
-          max={this.calculateMax(CO2eObject)}
-          startValue={CO2eObject.CO2eUsed}
+          max={this.props.budgetLimit/CO2eObject.intensity}
+          startValue={CO2eObject.moneySpent}
           handleChange={(e) => this.handleChange(e, CO2eObject)}
         />
       </div>
@@ -311,7 +318,10 @@ class App extends Component {
 
     for (var prop in file) {
       var CO2eObject = file[prop];
-      CO2eObject.CO2eUsed = 0;
+      CO2eObject.moneySpent = 0;
+      CO2eObject.co2eSpent = function(){
+        return this.moneySpent*this.intensity;
+      };
       switch(CO2eObject.chart_group) {
         case "transport":
           this.CO2eList.transport.push(CO2eObject);
