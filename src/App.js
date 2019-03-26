@@ -187,10 +187,10 @@ class SetDetailBudgetPage extends Component {
           <VictoryPie
             standalone={false}
             data={[
-              {x: this.titles[0], y: this.state.transport},
-              {x: this.titles[1], y: this.state.housing},
-              {x: this.titles[2], y: this.state.food},
-              {x: this.titles[3], y: this.state.other}
+              {x: this.titles[0], y: this.state.transport, label: " "},
+              {x: this.titles[1], y: this.state.housing, label: " "},
+              {x: this.titles[2], y: this.state.food, label: " "},
+              {x: this.titles[3], y: this.state.other, label: " "}
             ]}
             startAngle={0}
             endAngle={this.state.pieAngle}
