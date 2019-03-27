@@ -21,6 +21,7 @@ class InputPage extends Component {
 
   handleSubmit(event) {
     this.props.confirm(this.state.tempCurrentCO2e);
+    event.preventDefault();
   }
 
   render() {
