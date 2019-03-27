@@ -14,7 +14,7 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/3.6.3/workbox-sw.js");
 
 importScripts(
-  "/CO2e-budget-planner-tool/precache-manifest.a203d38f0cbaf83e650b8d6be3dd0276.js"
+  "/CO2e-budget-planner/precache-manifest.b6ccae0900f1936c5fd01aff0cc8ad04.js"
 );
 
 workbox.clientsClaim();
@@ -28,7 +28,7 @@ self.__precacheManifest = [].concat(self.__precacheManifest || []);
 workbox.precaching.suppressWarnings();
 workbox.precaching.precacheAndRoute(self.__precacheManifest, {});
 
-workbox.routing.registerNavigationRoute("/CO2e-budget-planner-tool/index.html", {
+workbox.routing.registerNavigationRoute("/CO2e-budget-planner/index.html", {
   
   blacklist: [/^\/_/,/\/[^\/]+\.[^\/]+$/],
 });
