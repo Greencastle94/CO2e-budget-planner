@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import './App.css';
 import file from './cats.json';
+import emissionPerCapita from './emissionPerCapita.json';
 import NumericInput from 'react-numeric-input';
 import { VictoryPie, VictoryLabel } from 'victory';
 
@@ -25,7 +26,8 @@ class InputPage extends Component {
   render() {
     return (
       <div>
-        <div>Fyll i nedan ditt totala växthusgasutsläpp för ett år</div>
+        <h2>Fyll i nedan ditt totala växthusgasutsläpp för ett år</h2>
+        <p>Gör klimatkalkylatorn <a target="_blank" href="https://www.klimatkontot.se/Default">här</a> först</p>
         <NumberInputForm value={this.state.tempCurrentCO2e} handleChange={this.handleChange} handleSubmit={this.handleSubmit}/>
       </div>
     );
@@ -51,16 +53,36 @@ class SetBudgetPage extends Component {
   constructor(props) {
     super(props);
     this.upperLimitRadius = 100;
-    this.exampleAverage = this.props.currentCO2e/2; // Temporary
-    this.exampleRadius = this.calculateRadius(this.exampleAverage);
+    this.exampleCountry = this.chooseExample(this.props.currentCO2e); // Temporary
+    this.exampleRadius = this.calculateRadius(this.exampleCountry.emissions);
 
     this.state = {
-      tempGoalCO2e: this.props.currentCO2e/2,
-      goalRadius: this.calculateRadius(this.props.currentCO2e/2)
+      tempGoalCO2e: this.props.currentCO2e,
+      goalRadius: this.calculateRadius(this.props.currentCO2e)
     };
 
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
+  }
+
+  chooseExample(currentCO2e) {
+    var currentHalf = currentCO2e/2;
+    var closestCountry = "china";
+
+    for (let country in emissionPerCapita) {
+      let newChange = Math.abs(emissionPerCapita[country].emission_per_capita - currentHalf);
+      let bestChange = Math.abs(emissionPerCapita[closestCountry].emission_per_capita - currentHalf);
+      if (newChange < bestChange) {
+        closestCountry = country;
+      }
+    }
+
+    console.log(closestCountry + " " + emissionPerCapita[closestCountry].emission_per_capita);
+
+    return {
+      name: emissionPerCapita[closestCountry].name,
+      emissions: emissionPerCapita[closestCountry].emission_per_capita
+    };
   }
 
   calculateRadius(CO2eValue) {
@@ -81,7 +103,7 @@ class SetBudgetPage extends Component {
   render() {
     return (
       <div>
-        <div>Sätt din årsbudget</div>
+        <h1>Sätt din årsbudget</h1>
         <svg viewBox="0 0 220 220">
           <VictoryPie
             standalone={false}
@@ -100,13 +122,22 @@ class SetBudgetPage extends Component {
             text="CO2e"
           />
         </svg>
-        <div>{this.state.tempGoalCO2e}</div>
+
+        <div className="averageCountry">
+          <svg height="10" width="50">
+            <line x1="0" x2="40" stroke="black" strokeWidth="10" strokeDasharray="6"/>
+          </svg>
+          <p>Medelmedborgare i {this.exampleCountry.name}</p>
+        </div>
+
+        <h2>{this.state.tempGoalCO2e}</h2>
         <RangeInput
-          stepSize="0,1"
+          stepSize="0.1"
           max={this.props.currentCO2e}
           startValue={this.state.tempGoalCO2e}
           handleChange={this.handleChange}
         />
+        <button type="button" onClick={this.props.goBack}>Tillbaka</button>
         <button type="button" onClick={this.handleSubmit}>Nästa steg</button>
       </div>
     );
@@ -182,7 +213,7 @@ class SetDetailBudgetPage extends Component {
   render() {
     return(
       <div>
-        <div>Planera din månadsbudget</div>
+        <h1>Planera din månadsbudget</h1>
         <svg viewBox="0 0 220 220">
           <VictoryPie
             standalone={false}
@@ -206,7 +237,7 @@ class SetDetailBudgetPage extends Component {
           budgetLimit={this.monthlyBudget}
           handleChange={this.handleChange.bind(this)}
         />
-        <button type="button">Tillbaka</button>
+        <button type="button" onClick={this.props.goBack}>Tillbaka</button>
       </div>
     );
   }
@@ -263,8 +294,6 @@ class BudgetControlPanel extends Component {
       emissionsForCategory.emissions += this.props.CO2eList[this.state.openTab][i].co2eSpent();
     }
 
-    console.log("Budget left: " + budgetLeft);
-
     this.setState({
       budgetLeft: budgetLeft
     });
@@ -272,7 +301,12 @@ class BudgetControlPanel extends Component {
   }
 
   calculateMax(CO2eObject) {
-    return CO2eObject.moneySpent + this.state.budgetLeft/CO2eObject.intensity;
+    if (CO2eObject.intensity == 0) {
+      return 8000;
+    }
+    else {
+      return CO2eObject.moneySpent + this.state.budgetLeft/CO2eObject.intensity;
+    }
   }
 
   render() {
@@ -309,7 +343,7 @@ class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      phase: 3,
+      phase: 1,
       currentCO2e: 11,
       budgetLimit: 6,
     };
@@ -345,6 +379,12 @@ class App extends Component {
     };
   }
 
+  goBack() {
+    this.setState({
+      phase: this.state.phase-1
+    });
+  }
+
   confirmCurrentEmissions(value) {
     this.setState({
       currentCO2e: value,
@@ -369,12 +409,14 @@ class App extends Component {
         mainContent = <SetBudgetPage
                         currentCO2e={this.state.currentCO2e}
                         confirm={(v)=>this.confirmBudgetLimit(v)}
+                        goBack={this.goBack.bind(this)}
                       />
         break;
       case 3:
         mainContent = <SetDetailBudgetPage
                         CO2eList={this.CO2eList}
                         budgetLimit={this.state.budgetLimit}
+                        goBack={this.goBack.bind(this)}
                       />
         break;
       default:

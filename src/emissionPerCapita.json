@@ -1,0 +1,58 @@
+{
+  "china": {
+    "name": "Kina",
+    "emission_per_capita": "6.3"
+  },
+  "south africa": {
+    "name": "Sydafrika",
+    "emission_per_capita": "6.0"
+  },
+  "greece": {
+    "name": "Grekland",
+    "emission_per_capita": "5.7"
+  },
+  "portugal": {
+    "name": "Portugal",
+    "emission_per_capita": "5.3"
+  },
+  "thailand": {
+    "name": "Thailand",
+    "emission_per_capita": "4.5"
+  },
+  "mexico": {
+    "name": "Mexiko",
+    "emission_per_capita": "4.1"
+  },
+  "romania": {
+    "name": "Rum\u00e4nien",
+    "emission_per_capita": "3.7"
+  },
+  "egypt": {
+    "name": "Egypten",
+    "emission_per_capita": "2.4"
+  },
+  "vietnam": {
+    "name": "Vietnam",
+    "emission_per_capita": "2.2"
+  },
+  "india": {
+    "name": "Indien",
+    "emission_per_capita": "1.7"
+  },
+  "philippines": {
+    "name": "Fillipinerna",
+    "emission_per_capita": "1.4"
+  },
+  "pakistan": {
+    "name": "Pakistan",
+    "emission_per_capita": "1.1"
+  },
+  "bolivia": {
+    "name": "Bolivia",
+    "emission_per_capita": "0.5"
+  },
+  "kenya": {
+    "name": "Kenya",
+    "emission_per_capita": "0.3"
+  }
+}
