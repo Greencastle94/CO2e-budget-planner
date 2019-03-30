@@ -1,7 +1,3 @@
-<<<<<<< HEAD
-
-*.git
-=======
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies
@@ -25,4 +21,3 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
->>>>>>> parent of a2020d52... Merge branch 'master' of https://github.com/Greencastle94/CO2e-budget-planner
