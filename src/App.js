@@ -329,10 +329,18 @@ class BudgetControlPanel extends Component {
       </div>
     );
 
+    let dietOptions
+    if (this.state.openTab == "food") {
+      dietOptions = <DietOption/>;
+    }
+    else {
+      dietOptions = <div></div>;
+    }
+
     return (
       <div>
         {tabButtons}
-        {if (this.state.openTab == "food") return <DietOption/>;}
+        {dietOptions}
         {slidersForSpecificTab}
       </div>
     );
@@ -342,9 +350,9 @@ class BudgetControlPanel extends Component {
 function DietOption(props) {
   return (
     <form>
-      <input type="radio" name="diet" value="all-eater" checked> Allätare
-      <input type="radio" name="diet" value="vegetarian"> Vegetarian
-      <input type="radio" name="diet" value="vegan"> Vegan
+      <input type="radio" name="diet" value="all-eater" checked>Allätare</input>
+      <input type="radio" name="diet" value="vegetarian">Vegetarian</input>
+      <input type="radio" name="diet" value="vegan">Vegan</input>
     </form>
   );
 }

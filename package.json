@@ -3,16 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "gh-pages": "^2.0.1",
-    "react": "^16.8.4",
-    "react-dom": "^16.8.4",
+    "react": "^16.8.6",
+    "react-dom": "^16.8.6",
     "react-numeric-input": "^2.2.3",
     "react-scripts": "2.1.8",
-    "victory": "^32.0.2"
+    "victory": "^32.1.0"
   },
   "scripts": {
-    "predeploy": "npm run build",
-    "deploy": "gh-pages -b master -d build",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
@@ -26,6 +23,5 @@
     "not dead",
     "not ie <= 11",
     "not op_mini all"
-  ],
-  "homepage": "https://greencastle94.github.io/CO2e-budget-planner"
+  ]
 }
