@@ -31,3 +31,18 @@
     transform: rotate(360deg);
   }
 }
+
+.PieChart-1 {
+  /* height: 50vh; */
+}
+
+.legend {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 1%;
+}
+
+.legend > p {
+  margin: 0;
+}

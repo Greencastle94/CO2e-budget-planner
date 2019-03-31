@@ -53,8 +53,8 @@ function NumberInputForm (props) {
 class SetBudgetPage extends Component {
   constructor(props) {
     super(props);
-    this.upperLimitRadius = 100;
-    this.exampleCountry = this.chooseExample(this.props.currentCO2e); // Temporary
+    this.upperLimitRadius = 220;
+    this.exampleCountry = this.chooseExample(this.props.currentCO2e);
     this.exampleRadius = this.calculateRadius(this.exampleCountry.emissions);
 
     this.state = {
@@ -102,36 +102,49 @@ class SetBudgetPage extends Component {
   }
 
   render() {
+    let size = 450;
+
     return (
       <div>
         <h1>Sätt din årsbudget</h1>
-        <svg viewBox="0 0 220 220">
-          <VictoryPie
-            standalone={false}
-            width={220} height={220}
-            data={[{x: " ", y: 1}]}
-            radius={this.state.goalRadius}
-            innerRadius={this.state.goalRadius-20}
-            colorScale={["green"]}
-          />
-          <circle cx="110" cy="110" r={this.exampleRadius} fill="none" stroke="black" strokeWidth={3} strokeDasharray="6"/>
-          <circle cx="110" cy="110" r={this.upperLimitRadius} fill="none" stroke="red" strokeWidth={3}/>
-          <VictoryLabel
-            textAnchor="middle" verticalAnchor="middle"
-            x={110} y={110}
-            style={{fontSize: 20}}
-            text="CO2e"
-          />
-        </svg>
-
-        <div className="averageCountry">
-          <svg height="10" width="50">
-            <line x1="0" x2="40" stroke="black" strokeWidth="10" strokeDasharray="6"/>
+        <div className="PieChart-1">
+          <svg width={size} height={size}>
+            <VictoryPie
+              standalone={false}
+              width={size} height={size}
+              data={[{x: " ", y: 1}]}
+              radius={this.state.goalRadius}
+              innerRadius={this.state.goalRadius-30}
+              colorScale={["green"]}
+            />
+            <circle cx="50%" cy="50%" r={this.exampleRadius} fill="none" stroke="black" strokeWidth="10" strokeDasharray="10"/>
+            <circle cx="50%" cy="50%" r={this.upperLimitRadius} fill="none" stroke="red" strokeWidth="10"/>
+            <VictoryLabel
+              textAnchor="middle" verticalAnchor="middle"
+              x="50%" y="50%"
+              style={{fontSize: 20}}
+              text="CO2e"
+            />
           </svg>
-          <p>Medelmedborgare i {this.exampleCountry.name}</p>
         </div>
 
-        <h2>{this.state.tempGoalCO2e}</h2>
+        <div className="legend-container">
+          <div className="legend">
+            <svg height="10" width="50">
+              <line x1="0" x2="40" stroke="red" strokeWidth="10"/>
+            </svg>
+            <p>Nuvarande utsläpp</p>
+          </div>
+
+          <div className="legend">
+            <svg height="10" width="50">
+              <line x1="0" x2="40" stroke="black" strokeWidth="10" strokeDasharray="6"/>
+            </svg>
+            <p>Medelmedborgare i {this.exampleCountry.name}</p>
+          </div>
+        </div>
+
+        <h2>{this.state.tempGoalCO2e} ton</h2>
         <RangeInput
           stepSize="0.1"
           max={this.props.currentCO2e}
@@ -212,10 +225,12 @@ class SetDetailBudgetPage extends Component {
   }
 
   render() {
+    let size = 400;
+
     return(
       <div>
         <h1>Planera din månadsbudget</h1>
-        <svg viewBox="0 0 220 220">
+        <svg width={size} height={size}>
           <VictoryPie
             standalone={false}
             data={[
@@ -226,11 +241,11 @@ class SetDetailBudgetPage extends Component {
             ]}
             startAngle={0}
             endAngle={this.state.pieAngle}
-            width={220} height={220}
-            radius={100}
+            width={size} height={size}
+            radius={(size/2)-5}
             colorScale={["blue", "yellow", "green", "pink"]}
           />
-          <circle cx="110" cy="110" r="100" fill="none" stroke="black" strokeWidth="3"/>
+          <circle cx={size/2} cy={size/2} r={(size/2)-5} fill="none" stroke="black" strokeWidth="8"/>
         </svg>
         <BudgetControlPanel
           titles={this.titles}
@@ -250,6 +265,7 @@ class BudgetControlPanel extends Component {
     this.state = {
       openTab: "transport",
       budgetLeft: this.props.budgetLimit,
+      dietFactor: "1",
       sliderValue: 0
     };
     this.categories = [
@@ -268,7 +284,7 @@ class BudgetControlPanel extends Component {
 
   findIndexOfObject(CO2eObject) {
     for (let i in this.props.CO2eList[this.state.openTab]) {
-      if (this.props.CO2eList[this.state.openTab][i].name == CO2eObject.name) {
+      if (this.props.CO2eList[this.state.openTab][i].name === CO2eObject.name) {
         return i;
       }
     }
@@ -301,8 +317,14 @@ class BudgetControlPanel extends Component {
     this.props.handleChange(emissionsForCategory);
   }
 
+  handleDietChange = changeEvent => {
+    this.setState({
+      dietFactor: changeEvent.target.value
+    });
+  }
+
   calculateMax(CO2eObject) {
-    if (CO2eObject.intensity == 0) {
+    if (CO2eObject.intensity === 0) {
       return 8000;
     }
     else {
@@ -329,32 +351,45 @@ class BudgetControlPanel extends Component {
       </div>
     );
 
-    let dietOptions
-    if (this.state.openTab == "food") {
-      dietOptions = <DietOption/>;
-    }
-    else {
-      dietOptions = <div></div>;
-    }
-
     return (
       <div>
+        <form>
+          <label>
+            <input
+              type="radio"
+              name="diet"
+              value="1"
+              checked={this.state.dietFactor == "1"}
+              onChange={this.handleDietChange}
+            />
+            Allätare
+            </label>
+          <label>
+            <input
+              type="radio"
+              name="diet"
+              value="0.5"
+              checked={this.state.dietFactor == "0.5"}
+              onChange={this.handleDietChange}
+            />
+            Vegetarian
+          </label>
+          <label>
+            <input
+              type="radio"
+              name="diet"
+              value="0.25"
+              checked={this.state.dietFactor == "0.25"}
+              onChange={this.handleDietChange}
+            />
+            Vegan
+          </label>
+        </form>
         {tabButtons}
-        {dietOptions}
         {slidersForSpecificTab}
       </div>
     );
   }
-}
-
-function DietOption(props) {
-  return (
-    <form>
-      <input type="radio" name="diet" value="all-eater" checked>Allätare</input>
-      <input type="radio" name="diet" value="vegetarian">Vegetarian</input>
-      <input type="radio" name="diet" value="vegan">Vegan</input>
-    </form>
-  );
 }
 
 
@@ -363,7 +398,7 @@ class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      phase: 1,
+      phase: 3,
       currentCO2e: 11,
       budgetLimit: 6,
     };
