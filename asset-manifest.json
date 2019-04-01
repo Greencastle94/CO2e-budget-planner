@@ -1,5 +1,5 @@
 {
-  "main.css": "/CO2e-budget-planner/static/css/main.110cb29b.chunk.css",
+  "main.css": "/CO2e-budget-planner/static/css/main.cc75e073.chunk.css",
   "main.js": "/CO2e-budget-planner/static/js/main.78cc23cf.chunk.js",
   "main.js.map": "/CO2e-budget-planner/static/js/main.78cc23cf.chunk.js.map",
   "runtime~main.js": "/CO2e-budget-planner/static/js/runtime~main.bd161a21.js",
@@ -7,7 +7,7 @@
   "static/js/2.5dd568a4.chunk.js": "/CO2e-budget-planner/static/js/2.5dd568a4.chunk.js",
   "static/js/2.5dd568a4.chunk.js.map": "/CO2e-budget-planner/static/js/2.5dd568a4.chunk.js.map",
   "index.html": "/CO2e-budget-planner/index.html",
-  "precache-manifest.ab23d7e58f5af2ecb07e69545ff19c64.js": "/CO2e-budget-planner/precache-manifest.ab23d7e58f5af2ecb07e69545ff19c64.js",
+  "precache-manifest.779f96cb40a56b0c1e78a8dd2bd65f09.js": "/CO2e-budget-planner/precache-manifest.779f96cb40a56b0c1e78a8dd2bd65f09.js",
   "service-worker.js": "/CO2e-budget-planner/service-worker.js",
-  "static/css/main.110cb29b.chunk.css.map": "/CO2e-budget-planner/static/css/main.110cb29b.chunk.css.map"
+  "static/css/main.cc75e073.chunk.css.map": "/CO2e-budget-planner/static/css/main.cc75e073.chunk.css.map"
 }
