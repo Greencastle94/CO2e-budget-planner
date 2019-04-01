@@ -187,9 +187,21 @@ class SetDetailBudgetPage extends Component {
     ];
   }
 
-  calculateAngle() {
-    var state = this.state;
-    var total = state.transport + state.housing + state.food + state.other;
+  calculateAngle(categoryEmissions) {
+    let total = 0;
+
+    for (let category in this.state) {
+      if (category === "pieAngle") {
+        continue
+      }
+      else if (category === categoryEmissions.category) {
+        total += categoryEmissions.emissions;
+      }
+      else {
+        total += this.state[category];
+      }
+    }
+    console.log(total/this.monthlyBudget);
     return total/this.monthlyBudget*360;
   }
 
@@ -198,25 +210,25 @@ class SetDetailBudgetPage extends Component {
       case "transport":
         this.setState({
           transport: emissionsForCategory.emissions,
-          pieAngle: this.calculateAngle()
+          pieAngle: this.calculateAngle(emissionsForCategory)
         });
         break;
       case "housing":
         this.setState({
           housing: emissionsForCategory.emissions,
-          pieAngle: this.calculateAngle()
+          pieAngle: this.calculateAngle(emissionsForCategory)
         });
         break;
       case "food":
         this.setState({
           food: emissionsForCategory.emissions,
-          pieAngle: this.calculateAngle()
+          pieAngle: this.calculateAngle(emissionsForCategory)
         });
         break;
       case "other":
         this.setState({
           other: emissionsForCategory.emissions,
-          pieAngle: this.calculateAngle()
+          pieAngle: this.calculateAngle(emissionsForCategory)
         });
         break;
       default:
@@ -265,7 +277,7 @@ class BudgetControlPanel extends Component {
     this.state = {
       openTab: "transport",
       budgetLeft: this.props.budgetLimit,
-      dietFactor: "1",
+      dietFactor: 1,
       sliderValue: 0
     };
     this.categories = [
@@ -291,9 +303,16 @@ class BudgetControlPanel extends Component {
   }
 
   handleChange(event, CO2eObject) {
-    var budgetLeft = this.state.budgetLeft;
-    var moneyChange = event.target.value - CO2eObject.moneySpent;
-    var co2eChange = moneyChange * CO2eObject.intensity;
+    let budgetLeft = this.state.budgetLeft;
+    let moneyChange = event.target.value - CO2eObject.moneySpent;
+    let co2eChange = 0;
+
+    if (CO2eObject.name === "food_other" || CO2eObject.name === "groceries" || CO2eObject.name === "restaurant" || CO2eObject.name === "snacks") {
+      co2eChange = moneyChange * CO2eObject.intensity * this.state.dietFactor;
+    }
+    else {
+      co2eChange = moneyChange * CO2eObject.intensity;
+    }
 
     if (budgetLeft - co2eChange >= 0) {
       this.props.CO2eList[this.state.openTab][this.findIndexOfObject(CO2eObject)].moneySpent += moneyChange;
@@ -308,7 +327,13 @@ class BudgetControlPanel extends Component {
       emissions: 0
     };
     for (let i in this.props.CO2eList[this.state.openTab]) {
-      emissionsForCategory.emissions += this.props.CO2eList[this.state.openTab][i].co2eSpent();
+      let object = this.props.CO2eList[this.state.openTab][i];
+      if (object.name === "food_other" || object.name === "groceries" || object.name === "restaurant" || object.name === "snacks") {
+        emissionsForCategory.emissions += object.co2eSpent()*this.state.dietFactor;
+      }
+      else {
+        emissionsForCategory.emissions += object.co2eSpent();
+      }
     }
 
     this.setState({
@@ -317,18 +342,56 @@ class BudgetControlPanel extends Component {
     this.props.handleChange(emissionsForCategory);
   }
 
-  handleDietChange = changeEvent => {
+  handleDietChange(event) {
+    let dietFactor = parseFloat(event.target.value);
+    let totalCO2eSpent = 0;
+    let emissionsForCategory = {
+      category: this.state.openTab,
+      emissions: 0
+    };
+    for (let category in this.props.CO2eList) {
+      for (let i in this.props.CO2eList[category]) {
+        let object = this.props.CO2eList[category][i];
+        if (object.chart_group === "food") {
+          if (object.name === "food_other" || object.name === "groceries" || object.name === "restaurant" || object.name === "snacks") {
+            emissionsForCategory.emissions += object.co2eSpent()*dietFactor;
+            totalCO2eSpent += object.co2eSpent()*dietFactor;
+          }
+          else {
+            emissionsForCategory.emissions += object.co2eSpent();
+            totalCO2eSpent += object.co2eSpent();
+          }
+        }
+        else {
+          totalCO2eSpent += object.co2eSpent();
+        }
+      }
+    }
+
+    console.log(emissionsForCategory.emissions);
+
     this.setState({
-      dietFactor: changeEvent.target.value
+      dietFactor: dietFactor,
+      budgetLeft: this.props.budgetLimit - totalCO2eSpent
     });
+    this.props.handleChange(emissionsForCategory);
   }
 
   calculateMax(CO2eObject) {
     if (CO2eObject.intensity === 0) {
-      return 8000;
+      return 9000;
     }
     else {
-      return CO2eObject.moneySpent + this.state.budgetLeft/CO2eObject.intensity;
+      let dietFactor = 1;
+      if (CO2eObject.name === "food_other" || CO2eObject.name === "groceries" || CO2eObject.name === "restaurant" || CO2eObject.name === "snacks") {
+        dietFactor = this.state.dietFactor;
+      }
+
+      // if(CO2eObject.name === "groceries") {
+      //   console.log(CO2eObject.display_name);
+      //   console.log("MaxValue: " + Math.round(CO2eObject.moneySpent + (this.state.budgetLeft/(CO2eObject.intensity*dietFactor))));
+      // }
+      return CO2eObject.moneySpent + (this.state.budgetLeft/(CO2eObject.intensity*dietFactor));
     }
   }
 
@@ -341,6 +404,7 @@ class BudgetControlPanel extends Component {
     let slidersForSpecificTab = this.props.CO2eList[this.state.openTab].map((CO2eObject) =>
       <div>
         <h3>{CO2eObject.display_name}</h3>
+        <p>{CO2eObject.tags}</p>
         <p>{CO2eObject.moneySpent} kr</p>
         <RangeInput
           stepSize="1"
@@ -356,7 +420,7 @@ class BudgetControlPanel extends Component {
       dietOption = (
         <DietOption
           selectedOption={this.state.dietFactor}
-          handleChange={this.handleDietChange}
+          handleChange={this.handleDietChange.bind(this)}
         />
       );
     }
@@ -382,7 +446,7 @@ function DietOption(props) {
           type="radio"
           name="diet"
           value="1"
-          checked={props.selectedOption === "1"}
+          checked={props.selectedOption === 1}
           onChange={props.handleChange}
         />
         Allätare
@@ -392,7 +456,7 @@ function DietOption(props) {
           type="radio"
           name="diet"
           value="0.5"
-          checked={props.selectedOption === "0.5"}
+          checked={props.selectedOption === 0.5}
           onChange={props.handleChange}
         />
         Vegetarian
@@ -402,7 +466,7 @@ function DietOption(props) {
           type="radio"
           name="diet"
           value="0.25"
-          checked={props.selectedOption === "0.25"}
+          checked={props.selectedOption === 0.25}
           onChange={props.handleChange}
         />
         Vegan
