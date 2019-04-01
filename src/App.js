@@ -142,9 +142,16 @@ class SetBudgetPage extends Component {
             </svg>
             <p>Medelmedborgare i {this.exampleCountry.name}</p>
           </div>
+
+          <div className="legend">
+            <svg height="10" width="50">
+              <line x1="0" x2="40" stroke="green" strokeWidth="20"/>
+            </svg>
+            <p>Målbudget</p>
+          </div>
         </div>
 
-        <h2>{this.state.tempGoalCO2e} ton</h2>
+        <h2>{this.state.tempGoalCO2e} ton/år</h2>
         <RangeInput
           stepSize="0.1"
           max={this.props.currentCO2e}
