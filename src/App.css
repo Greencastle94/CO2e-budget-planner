@@ -32,6 +32,56 @@
   }
 }
 
+h1 {
+  margin: 10px;
+}
+
+h3 {
+  margin: 0px;
+}
+
+p {
+  margin: 5px;
+}
+
+.budget-control-panel {
+  margin-top: 10px;
+}
+
+input[type=range] {
+  width: 400px;
+}
+
+.tab-button {
+  border: none;
+  color: white;
+  padding: 10px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+}
+
+.transport-tab {
+  background-color: #4188b9;
+}
+
+.housing-tab {
+  background-color: #cfd041;
+}
+
+.food-tab {
+  background-color: #4CAF50;
+}
+
+.other-tab {
+  background-color: #854caf;
+}
+
+.bottom-button {
+  margin-top: 15px;
+}
+
 .PieChart-1 {
   /* height: 50vh; */
 }
@@ -45,4 +95,21 @@
 
 .legend > p {
   margin: 0;
+}
+
+.category-section {
+  height: 200px;
+  overflow: auto;
+}
+
+.sub-category {
+  margin: 5px;
+}
+
+.sub-category-info {
+  margin: 5px;
+}
+
+.budget-control-panel>form {
+  margin-top: 10px;
 }

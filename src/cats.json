@@ -26,7 +26,7 @@
     "appliances": {
         "name": "appliances",
         "category_order": "3",
-        "display_name": "Husger\u00e5d & aparater",
+        "display_name": "Husger\u00e5d & apparater",
         "parent_code": "home_garden",
         "parent_order": "2",
         "parent_display": "Hem & tr\u00e4dg\u00e5rd",

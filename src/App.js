@@ -43,7 +43,7 @@ function NumberInputForm (props) {
         ton
       </label>
       <br/>
-      <input type="submit" value="Nästa steg" />
+      <input className="bottom-button" type="submit" value="Nästa steg" />
     </form>
   );
 }
@@ -151,8 +151,8 @@ class SetBudgetPage extends Component {
           startValue={this.state.tempGoalCO2e}
           handleChange={this.handleChange}
         />
-        <button type="button" onClick={this.props.goBack}>Tillbaka</button>
-        <button type="button" onClick={this.handleSubmit}>Nästa steg</button>
+        <button className="bottom-button" type="button" onClick={this.props.goBack}>Tillbaka</button>
+        <button className="bottom-button" type="button" onClick={this.handleSubmit}>Nästa steg</button>
       </div>
     );
   }
@@ -255,9 +255,15 @@ class SetDetailBudgetPage extends Component {
             endAngle={this.state.pieAngle}
             width={size} height={size}
             radius={(size/2)-5}
-            colorScale={["blue", "yellow", "green", "pink"]}
+            colorScale={["#4188b9", "#cfd041", "#4CAF50", "#854caf"]}
           />
           <circle cx={size/2} cy={size/2} r={(size/2)-5} fill="none" stroke="black" strokeWidth="8"/>
+          <VictoryLabel
+            textAnchor="middle" verticalAnchor="middle"
+            x="50%" y="50%"
+            style={{fontSize: 20}}
+            text={Math.round(this.monthlyBudget) + " kg CO2e"}
+          />
         </svg>
         <BudgetControlPanel
           titles={this.titles}
@@ -265,7 +271,7 @@ class SetDetailBudgetPage extends Component {
           budgetLimit={this.monthlyBudget}
           handleChange={this.handleChange.bind(this)}
         />
-        <button type="button" onClick={this.props.goBack}>Tillbaka</button>
+        <button className="bottom-button" type="button" onClick={this.props.goBack}>Tillbaka</button>
       </div>
     );
   }
@@ -378,7 +384,7 @@ class BudgetControlPanel extends Component {
   }
 
   calculateMax(CO2eObject) {
-    if (CO2eObject.intensity === 0) {
+    if (CO2eObject.intensity == 0) {
       return 9000;
     }
     else {
@@ -398,13 +404,15 @@ class BudgetControlPanel extends Component {
   render() {
     let i = 0;
     let tabButtons = this.props.titles.map((title) =>
-      <button value={this.categories[i++]} onClick={this.tabClick.bind(this)}>{title}</button>
+      <button className={"tab-button " + this.categories[i] + "-tab"} value={this.categories[i++]} onClick={this.tabClick.bind(this)}>{title}</button>
     );
 
     let slidersForSpecificTab = this.props.CO2eList[this.state.openTab].map((CO2eObject) =>
-      <div>
-        <h3>{CO2eObject.display_name}</h3>
-        <p>{CO2eObject.tags}</p>
+      <div className="sub-category">
+        <div className="sub-category-info">
+          <h3>{CO2eObject.display_name}</h3>
+          <p><i>{CO2eObject.tags}</i></p>
+        </div>
         <p>{CO2eObject.moneySpent} kr</p>
         <RangeInput
           stepSize="1"
@@ -429,10 +437,12 @@ class BudgetControlPanel extends Component {
     }
 
     return (
-      <div>
+      <div className="budget-control-panel">
         {tabButtons}
         {dietOption}
-        {slidersForSpecificTab}
+        <div className="category-section">
+          {slidersForSpecificTab}
+        </div>
       </div>
     );
   }
@@ -481,7 +491,7 @@ class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      phase: 3,
+      phase: 1,
       currentCO2e: 11,
       budgetLimit: 6,
     };
