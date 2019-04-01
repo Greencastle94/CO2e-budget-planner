@@ -14,7 +14,7 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/3.6.3/workbox-sw.js");
 
 importScripts(
-  "/CO2e-budget-planner/precache-manifest.ce566b5e765bf14b6b0dc63ff17cebc4.js"
+  "/CO2e-budget-planner/precache-manifest.ab23d7e58f5af2ecb07e69545ff19c64.js"
 );
 
 workbox.clientsClaim();
