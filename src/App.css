@@ -64,18 +64,42 @@ input[type=range] {
 
 .transport-tab {
   background-color: #4188b9;
+  border: 2px solid #4188b9;
+}
+
+.transport-tab:hover {
+  background-color: #ffffff;
+  color: #4188b9;
 }
 
 .housing-tab {
   background-color: #cfd041;
+  border: 2px solid #cfd041;
+}
+
+.housing-tab:hover {
+  background-color: #ffffff;
+  color: #cfd041;
 }
 
 .food-tab {
   background-color: #4CAF50;
+  border: 2px solid #4CAF50;
+}
+
+.food-tab:hover {
+  background-color: #ffffff;
+  color: #4CAF50;
 }
 
 .other-tab {
   background-color: #854caf;
+  border: 2px solid #854caf;
+}
+
+.other-tab:hover {
+  background-color: #ffffff;
+  color: #854caf;
 }
 
 .bottom-button {
@@ -98,8 +122,11 @@ input[type=range] {
 }
 
 .category-section {
+  margin: auto;
   height: 200px;
+  width: 1000px;
   overflow: auto;
+  border: 2px solid #000000;
 }
 
 .sub-category {
