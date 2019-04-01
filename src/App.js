@@ -351,45 +351,64 @@ class BudgetControlPanel extends Component {
       </div>
     );
 
+    let dietOption;
+    if (this.state.openTab === "food") {
+      dietOption = (
+        <DietOption
+          selectedOption={this.state.dietFactor}
+          handleChange={this.handleDietChange}
+        />
+      );
+    }
+    else {
+      dietOption = null;
+    }
+
     return (
       <div>
-        <form>
-          <label>
-            <input
-              type="radio"
-              name="diet"
-              value="1"
-              checked={this.state.dietFactor == "1"}
-              onChange={this.handleDietChange}
-            />
-            Allätare
-            </label>
-          <label>
-            <input
-              type="radio"
-              name="diet"
-              value="0.5"
-              checked={this.state.dietFactor == "0.5"}
-              onChange={this.handleDietChange}
-            />
-            Vegetarian
-          </label>
-          <label>
-            <input
-              type="radio"
-              name="diet"
-              value="0.25"
-              checked={this.state.dietFactor == "0.25"}
-              onChange={this.handleDietChange}
-            />
-            Vegan
-          </label>
-        </form>
         {tabButtons}
+        {dietOption}
         {slidersForSpecificTab}
       </div>
     );
   }
+}
+
+function DietOption(props) {
+  return (
+    <form>
+      <label>
+        <input
+          type="radio"
+          name="diet"
+          value="1"
+          checked={props.selectedOption === "1"}
+          onChange={props.handleChange}
+        />
+        Allätare
+        </label>
+      <label>
+        <input
+          type="radio"
+          name="diet"
+          value="0.5"
+          checked={props.selectedOption === "0.5"}
+          onChange={props.handleChange}
+        />
+        Vegetarian
+      </label>
+      <label>
+        <input
+          type="radio"
+          name="diet"
+          value="0.25"
+          checked={props.selectedOption === "0.25"}
+          onChange={props.handleChange}
+        />
+        Vegan
+      </label>
+    </form>
+  );
 }
 
 
